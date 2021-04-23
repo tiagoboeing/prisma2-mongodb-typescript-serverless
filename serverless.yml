@@ -1,0 +1,17 @@
+service: aws-node-rest-api-typescript
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+
+plugins:
+  - serverless-plugin-typescript
+  - serverless-offline
+
+functions:
+  index:
+    handler: src/index.handler
+    events:
+      - http:
+          path: /
+          method: get

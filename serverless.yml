@@ -31,7 +31,7 @@ functions:
 # https://github.com/prisma/prisma/issues/5023
 layers:
   prismaGenerated:
-    path: .build/.webpack/dependencies/
+    path: .build/.webpack/dependencies/node_modules
     description: Prisma binaries and schema
 
 #   prismaRhel:
@@ -48,6 +48,7 @@ resources:
 
 custom:
   webpack:
+    keepOutputDirectory: true
     includeModules: false
     # packagerOptions:
     #   scripts:

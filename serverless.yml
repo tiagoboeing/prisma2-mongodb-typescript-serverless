@@ -6,8 +6,11 @@ provider:
   stage: ${opt:stage, 'dev'}
   lambdaHashingVersion: "20201221"
   environment:
+    PRISMA_QUERY_ENGINE_BINARY: ${file(./utils/layers.js):handler.path}
     DATABASE_URL: mongodb+srv://test_prisma:test_prisma@biblioteca-dos-cursos.9bapz.gcp.mongodb.net/myFirstDatabase?retryWrites=true&w=majority
-    PRISMA_QUERY_ENGINE_BINARY: /prisma/query-engine-rhel-openssl-1.0.x
+
+package:
+  individually: true
 
 plugins:
   - serverless-webpack
@@ -16,50 +19,36 @@ plugins:
 functions:
   index:
     handler: src/index.handler
-    layers:
-      - { Ref: PrismaDebianLambdaLayer }
-      - { Ref: PrismaRhelLambdaLayer }
     events:
       - http:
           path: /
           method: get
+    layers:
+      - { Ref: PrismaGeneratedLambdaLayer }
 
 # Unfortunelly for Serverless Prisma need binary and Lambda don't have permissions to access this
 # the workaround is to create layers with the binaries
 # https://github.com/prisma/prisma/issues/5023
 layers:
-  prismaDebian:
-    path: node_modules/.prisma/client/query-engine-debian-openssl-1.1.x
-    description: Prisma Debia binary
+  prismaGenerated:
+    path: .build/.webpack/dependencies/
+    description: Prisma binaries and schema
 
-  prismaRhel:
-    path: node_modules/.prisma/client/query-engine-rhel-openssl-1.0.x
-    description: Prisma Red Hat binary
+#   prismaRhel:
+#     path: node_modules/.prisma/client/query-engine-rhel-openssl-1.0.x
+#     description: Prisma Red Hat binary
 
 resources:
   Outputs:
-    PrismaDebianLayerExport:
+    PrismaGeneratedLayerExport:
       Value:
-        Ref: PrismaDebianLambdaLayer
+        Ref: PrismaGeneratedLambdaLayer
       Export:
-        Name: PrismaDebianLambdaLayer
-
-    PrismaRhelLayerExport:
-      Value:
-        Ref: PrismaRhelLambdaLayer
-      Export:
-        Name: PrismaRhelLambdaLayer
-
-package:
-  patterns:
-    - "!node_modules/.prisma/client/query-engine-*"
-    - "node_modules/.prisma/client/query-engine-rhel-*"
-
-  individually: true
+        Name: PrismaGeneratedLambdaLayer
 
 custom:
   webpack:
-    keepOutputDirectory: true
-    includeModules:
-      forceInclude:
-        - "@prisma/client"
+    includeModules: false
+    # packagerOptions:
+    #   scripts:
+    #     - prisma generate

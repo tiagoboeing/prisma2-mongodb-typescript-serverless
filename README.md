@@ -17,12 +17,20 @@ git clone git@github.com:tiagoboeing/prisma2-mongodb-typescript-serverless.git
 cd prisma2-mongodb-typescript-serverless
 npm install
 
-npm start
+npm start 
+# or
+serverless offline start
 ```
 
 Send a GET request to `http://localhost:3000`
 
 ## Deploy
+
+Before do a deploy, make a build from Prisma CLI.
+
+```bash
+npx prisma generate
+```
 
 ```bash
 serverless deploy

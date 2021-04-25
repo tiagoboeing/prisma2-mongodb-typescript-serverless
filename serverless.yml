@@ -1,17 +1,65 @@
-service: aws-node-rest-api-typescript
+service: sls-prisma2-typescript-mongodb
 
 provider:
   name: aws
   runtime: nodejs14.x
+  stage: ${opt:stage, 'dev'}
+  lambdaHashingVersion: "20201221"
+  environment:
+    DATABASE_URL: mongodb+srv://test_prisma:test_prisma@biblioteca-dos-cursos.9bapz.gcp.mongodb.net/myFirstDatabase?retryWrites=true&w=majority
+    PRISMA_QUERY_ENGINE_BINARY: /prisma/query-engine-rhel-openssl-1.0.x
 
 plugins:
-  - serverless-plugin-typescript
+  - serverless-webpack
   - serverless-offline
 
 functions:
   index:
     handler: src/index.handler
+    layers:
+      - { Ref: PrismaDebianLambdaLayer }
+      - { Ref: PrismaRhelLambdaLayer }
     events:
       - http:
           path: /
           method: get
+
+# Unfortunelly for Serverless Prisma need binary and Lambda don't have permissions to access this
+# the workaround is to create layers with the binaries
+# https://github.com/prisma/prisma/issues/5023
+layers:
+  prismaDebian:
+    path: node_modules/.prisma/client/query-engine-debian-openssl-1.1.x
+    description: Prisma Debia binary
+
+  prismaRhel:
+    path: node_modules/.prisma/client/query-engine-rhel-openssl-1.0.x
+    description: Prisma Red Hat binary
+
+resources:
+  Outputs:
+    PrismaDebianLayerExport:
+      Value:
+        Ref: PrismaDebianLambdaLayer
+      Export:
+        Name: PrismaDebianLambdaLayer
+
+    PrismaRhelLayerExport:
+      Value:
+        Ref: PrismaRhelLambdaLayer
+      Export:
+        Name: PrismaRhelLambdaLayer
+
+package:
+  patterns:
+    - "!node_modules/.prisma/client/query-engine-*"
+    - "node_modules/.prisma/client/query-engine-rhel-*"
+
+  individually: true
+
+custom:
+  webpack:
+    keepOutputDirectory: true
+    includeModules:
+      forceInclude:
+        - "@prisma/client"

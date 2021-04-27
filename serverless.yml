@@ -6,11 +6,9 @@ provider:
   stage: ${opt:stage, 'dev'}
   lambdaHashingVersion: "20201221"
   environment:
+    NODE_PATH: .:/opt/node_modules
     PRISMA_QUERY_ENGINE_BINARY: ${file(./utils/layers.js):handler.path}
     DATABASE_URL: mongodb+srv://test_prisma:test_prisma@biblioteca-dos-cursos.9bapz.gcp.mongodb.net/myFirstDatabase?retryWrites=true&w=majority
-
-package:
-  individually: true
 
 plugins:
   - serverless-webpack
@@ -31,7 +29,7 @@ functions:
 # https://github.com/prisma/prisma/issues/5023
 layers:
   prismaGenerated:
-    path: .build/.webpack/dependencies/node_modules
+    path: .build/.webpack/prisma/node_modules
     description: Prisma binaries and schema
 
 #   prismaRhel:
@@ -46,10 +44,10 @@ resources:
       Export:
         Name: PrismaGeneratedLambdaLayer
 
+package:
+  individually: true
+
 custom:
   webpack:
     keepOutputDirectory: true
-    includeModules: false
-    # packagerOptions:
-    #   scripts:
-    #     - prisma generate
+    includeModules: true

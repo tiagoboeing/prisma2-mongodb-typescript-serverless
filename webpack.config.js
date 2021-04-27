@@ -21,7 +21,7 @@ module.exports = {
   devtool: 'source-map',
 
   // Exclude aws-sdk folder
-  externals: [nodeExternals(), 'node_modules/.prisma'],
+  externals: [nodeExternals()],
 
   mode: slsw.lib.webpack.isLocal ? 'development' : 'production',
 
@@ -47,11 +47,11 @@ module.exports = {
       patterns: [
         {
           from: './node_modules/.prisma/**',
-          to: '../dependencies'
+          to: '../prisma'
         },
         {
           from: './node_modules/@prisma/**/*',
-          to: '../dependencies'
+          to: '../prisma'
         }
       ]
     })
@@ -62,7 +62,7 @@ module.exports = {
       {
         test: /\.tsx?$/,
         loader: 'ts-loader',
-        include: __dirname,
+        include: __dirname + '/src',
         exclude: /node_modules/
       }
     ]

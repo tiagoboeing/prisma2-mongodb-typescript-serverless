@@ -45,14 +45,21 @@ module.exports = {
     // Copy Prisma contents
     new CopyPlugin({
       patterns: [
-        {
-          from: './node_modules/.prisma/**',
-          to: '../prisma'
-        },
-        {
-          from: './node_modules/@prisma/**/*',
-          to: '../prisma'
-        }
+        { from: './node_modules/.prisma/**/*', to: '../.prisma' },
+        { from: './node_modules/@prisma/**/*', to: '../@prisma' }
+        // './node_modules/.prisma/**/*',
+        // './node_modules/@prisma/**/*',
+        // {
+        //   from: './node_modules/**/*',
+
+        //   globOptions: {
+        //     dot: false,
+        //     ignore: [
+        //       './node_modules/.prisma/**/*',
+        //       './node_modules/@prisma/**/*'
+        //     ]
+        //   }
+        // }
       ]
     })
   ],

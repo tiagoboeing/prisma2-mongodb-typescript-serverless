@@ -1,4 +1,5 @@
 service: sls-prisma2-typescript-mongodb
+useDotEnv: true
 
 provider:
   name: aws
@@ -6,9 +7,8 @@ provider:
   stage: ${opt:stage, 'dev'}
   lambdaHashingVersion: "20201221"
   environment:
-    NODE_PATH: .:/opt/node_modules
-    PRISMA_QUERY_ENGINE_BINARY: ${file(./utils/layers.js):handler.path}
-    DATABASE_URL: mongodb+srv://test_prisma:test_prisma@biblioteca-dos-cursos.9bapz.gcp.mongodb.net/myFirstDatabase?retryWrites=true&w=majority
+    NODE_PATH: .:/opt
+    PRISMA_QUERY_ENGINE_BINARY: /opt/.prisma/client/query-engine-rhel-openssl-1.0.x
 
 plugins:
   - serverless-webpack
@@ -22,15 +22,21 @@ functions:
           path: /
           method: get
     layers:
+      - { Ref: PrismaClientLambdaLayer }
       - { Ref: PrismaGeneratedLambdaLayer }
 
 # Unfortunelly for Serverless Prisma need binary and Lambda don't have permissions to access this
 # the workaround is to create layers with the binaries
 # https://github.com/prisma/prisma/issues/5023
 layers:
-  prismaGenerated:
-    path: .build/.webpack/prisma/node_modules
+  prismaClient:
+    path: .build/.webpack/@prisma/node_modules
     description: Prisma binaries and schema
+
+  prismaGenerated:
+    path: .build/.webpack/.prisma/node_modules
+    description: Prisma binaries and schema
+
 
 #   prismaRhel:
 #     path: node_modules/.prisma/client/query-engine-rhel-openssl-1.0.x
@@ -38,7 +44,7 @@ layers:
 
 resources:
   Outputs:
-    PrismaGeneratedLayerExport:
+    PrismaLayerExport:
       Value:
         Ref: PrismaGeneratedLambdaLayer
       Export:
